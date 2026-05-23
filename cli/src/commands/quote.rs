@@ -6,7 +6,12 @@ use xlm_ns_sdk::client::XlmNsClient;
 /// Run a non-mutating registration quote.
 ///
 /// This command only reads pricing data — no transaction is submitted.
-pub fn run_quote(config: NetworkConfig, output: OutputFormat, label: &str, duration_years: u32) {
+pub async fn run_quote(
+    config: NetworkConfig,
+    output: OutputFormat,
+    label: &str,
+    duration_years: u32,
+) -> anyhow::Result<()> {
     let registrar_contract_id = config
         .registrar_contract_id
         .clone()
@@ -18,10 +23,11 @@ pub fn run_quote(config: NetworkConfig, output: OutputFormat, label: &str, durat
         config.registry_contract_id.clone(),
         config.subdomain_contract_id.clone(),
         config.bridge_contract_id.clone(),
+        config.auction_contract_id.clone(),
     )
     .with_registrar(registrar_contract_id.clone());
 
-    match client.quote_registration(label, duration_years) {
+    match client.quote_registration(label, duration_years).await {
         Ok(quote) => {
             let human = format!(
                 "Quote for {label}.xlm ({duration_years} year(s)):\n\
@@ -105,6 +111,7 @@ pub fn run_quote(config: NetworkConfig, output: OutputFormat, label: &str, durat
                     "read_only": true,
                 }),
             );
+            Ok(())
         }
         Err(err) => {
             let message = format!("ERROR: Failed to fetch registration quote: {err}");
@@ -118,6 +125,7 @@ pub fn run_quote(config: NetworkConfig, output: OutputFormat, label: &str, durat
                     "registrar_contract_id": registrar_contract_id,
                 }),
             );
+            Err(anyhow::anyhow!(message))
         }
     }
 }
@@ -126,16 +134,21 @@ pub fn run_quote(config: NetworkConfig, output: OutputFormat, label: &str, durat
 ///
 /// Returns a status distinguishing: available, active, grace-period, and claimable states.
 /// This command is non-mutating — no transaction is submitted.
-pub fn run_availability(config: NetworkConfig, output: OutputFormat, name: &str) {
+pub async fn run_availability(
+    config: NetworkConfig,
+    output: OutputFormat,
+    name: &str,
+) -> anyhow::Result<()> {
     let client = XlmNsClient::new(
         config.rpc_url.clone(),
         Some(config.network_passphrase.clone()),
         config.registry_contract_id.clone(),
         config.subdomain_contract_id.clone(),
         config.bridge_contract_id.clone(),
+        config.auction_contract_id.clone(),
     );
 
-    match client.get_registration(name) {
+    match client.get_registration(name).await {
         Ok(Some(record)) => {
             // Name has an existing registration record.
             let expires_at = record.expires_at;
@@ -187,6 +200,7 @@ pub fn run_availability(config: NetworkConfig, output: OutputFormat, name: &str)
                     "read_only": true,
                 }),
             );
+            Ok(())
         }
         Ok(None) => {
             emit(
@@ -204,6 +218,7 @@ pub fn run_availability(config: NetworkConfig, output: OutputFormat, name: &str)
                     "read_only": true,
                 }),
             );
+            Ok(())
         }
         Err(err) => {
             let message = format!("ERROR: Failed to check availability for {name}: {err}");
@@ -216,6 +231,7 @@ pub fn run_availability(config: NetworkConfig, output: OutputFormat, name: &str)
                     "registry_contract_id": config.registry_contract_id,
                 }),
             );
+            Err(anyhow::anyhow!(message))
         }
     }
 }

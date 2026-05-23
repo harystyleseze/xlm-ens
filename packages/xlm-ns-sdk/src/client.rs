@@ -3,11 +3,11 @@ use crate::errors::{ContractErrorCode, SdkError};
 use crate::types::{
     AddControllerRequest, AuctionCreateRequest, AuctionInfo, AuctionState, AuctionStatus,
     BidRequest, BridgeRoute, BuildMessageRequest, CreateSubdomainRequest, FeeBreakdown, NameRecord,
-    NftRecord, RegisterChainRequest, RegisterParentRequest, RegisterResult, RegistrarMetrics,
-    RegistrationQuote, RegistrationReceipt, RegistrationRequest, RegistryEntry, RenewResult,
-    RenewalReceipt, RenewalRequest, ResolutionRecord, ResolutionResult, ReverseResolution,
-    Subdomain, SubmissionStatus, TextRecord, TextRecordUpdate, TransactionSubmission,
-    TransferRequest, TransferSubdomainRequest, DEFAULT_FEE_CURRENCY,
+    NftRecord, RegisterChainRequest, RegisterParentRequest, RegistrarMetrics, RegistrationQuote,
+    RegistrationReceipt, RegistrationRequest, RegistryEntry, RenewalReceipt, RenewalRequest,
+    ResolutionRecord, ResolutionResult, ReverseResolution, Subdomain, SubmissionStatus, TextRecord,
+    TextRecordUpdate, TransactionSubmission, TransferRequest, TransferSubdomainRequest,
+    DEFAULT_FEE_CURRENCY,
 };
 use std::collections::HashMap;
 use stellar_rpc_client::Client;
@@ -435,7 +435,7 @@ impl XlmNsClient {
             .map_err(|e| SdkError::InvalidRequest(format!("failed to create RPC client: {}", e)))?;
 
         // Get current network information for transaction building
-        let network = rpc
+        let _network = rpc
             .get_network()
             .await
             .map_err(|e| SdkError::Transport(format!("failed to get network: {}", e)))?;

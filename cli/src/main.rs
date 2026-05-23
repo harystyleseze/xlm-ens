@@ -203,22 +203,6 @@ enum AuctionCommands {
         #[arg(long)]
         signer: Option<String>,
     },
-    /// Subdomain management commands
-    ///
-    /// Subdomain flow:
-    /// 1. Register a parent domain: xlm-ns subdomain register-parent example.xlm <owner>
-    /// 2. Add controllers (optional): xlm-ns subdomain add-controller example.xlm <controller>
-    /// 3. Create subdomains: xlm-ns subdomain create sub example.xlm <owner>
-    /// 4. Transfer subdomains: xlm-ns subdomain transfer sub.example.xlm <new_owner>
-    Subdomain {
-        #[command(subcommand)]
-        command: SubdomainCommands,
-    },
-    /// Bridge management commands
-    Bridge {
-        #[command(subcommand)]
-        command: BridgeCommands,
-    },
 }
 
 #[derive(Subcommand)]
@@ -277,61 +261,6 @@ enum BridgeCommands {
         name: String,
         /// Target chain
         chain: String,
-    },
-}
-
-#[derive(Subcommand)]
-enum BridgeCommands {
-    /// Register a bridge route for a remote chain
-    Register {
-        /// Remote chain name
-        chain: String,
-    },
-    /// Inspect a bridge route
-    Inspect {
-        /// Chain name
-        chain: String,
-    },
-    /// Generate a resolution payload for bridging
-    Payload {
-        /// Name to bridge
-        name: String,
-        /// Target chain
-        chain: String,
-    },
-}
-
-#[derive(Subcommand)]
-enum SubdomainCommands {
-    /// Register a parent domain for subdomains
-    RegisterParent {
-        /// Parent name (e.g. "com")
-        name: String,
-        /// Owner address
-        owner: String,
-    },
-    /// Add a controller to a parent domain
-    AddController {
-        /// Parent name
-        parent: String,
-        /// Controller address
-        controller: String,
-    },
-    /// Create a subdomain
-    Create {
-        /// Subdomain label
-        label: String,
-        /// Parent name
-        parent: String,
-        /// Owner address
-        owner: String,
-    },
-    /// Transfer subdomain ownership
-    Transfer {
-        /// Full subdomain FQDN
-        fqdn: String,
-        /// New owner address
-        new_owner: String,
     },
 }
 
@@ -473,8 +402,8 @@ async fn run() -> anyhow::Result<()> {
             }
         },
         Commands::Subdomain { command } => match command {
-            SubdomainCommands::RegisterParent { name, owner } => {
-                commands::subdomain::run_register_parent(config, &name, &owner).await
+            SubdomainCommands::RegisterParent { parent, owner } => {
+                commands::subdomain::run_register_parent(config, &parent, &owner).await
             }
             SubdomainCommands::AddController { parent, controller } => {
                 commands::subdomain::run_add_controller(config, &parent, &controller).await
@@ -498,10 +427,10 @@ async fn run() -> anyhow::Result<()> {
             commands::portfolio::run_portfolio(config, cli.output, &owner).await
         }
         Commands::Quote { name, years } => {
-            commands::quote::run_quote(config, cli.output, &name, years);
+            commands::quote::run_quote(config, cli.output, &name, years).await
         }
         Commands::Availability { name } => {
-            commands::quote::run_availability(config, cli.output, &name);
+            commands::quote::run_availability(config, cli.output, &name).await
         }
         Commands::Completions { .. } => unreachable!("handled above"),
     }
