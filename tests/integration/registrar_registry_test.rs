@@ -33,6 +33,7 @@ mod registrar_registry_integration {
         RegistryContractClient<'static>,
     ) {
         let env = Env::default();
+        env.mock_all_auths();
 
         let registry_id = env.register(RegistryContract, ());
         let registrar_id = env.register(RegistrarContract, ());

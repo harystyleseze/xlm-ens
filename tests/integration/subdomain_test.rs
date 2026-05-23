@@ -99,7 +99,7 @@ fn subdomain_flow_covers_controller_delegation_transfer_and_resolution() {
     let resolved_after_transfer = resolver.resolve(&fqdn).unwrap();
     assert_eq!(resolved_after_transfer.owner, next_owner);
     assert_eq!(resolved_after_transfer.address, second_address);
-    assert_eq!(resolver.reverse(&second_address), Some(fqdn));
+    assert_eq!(resolver.reverse(&second_address), Some(fqdn.clone()));
 
     // Test deletion of subdomain and its effect on resolver (none, resolver record persists)
     subdomain.delete(&fqdn, &next_owner);

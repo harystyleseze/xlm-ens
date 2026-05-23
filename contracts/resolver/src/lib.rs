@@ -57,7 +57,8 @@ impl ResolverContract {
         now_unix: u64,
     ) -> Result<(), ResolverError> {
         validate_fqdn_soroban(&name).map_err(|_| ResolverError::Validation)?;
-        let canonical_owner = match registry_owner(&env, &name, now_unix)? {
+        let registry_backed_owner = registry_owner(&env, &name, now_unix)?;
+        let canonical_owner = match registry_backed_owner.clone() {
             Some(registry_owner) => {
                 if registry_owner != owner {
                     return Err(ResolverError::Unauthorized);
@@ -69,7 +70,7 @@ impl ResolverContract {
 
         let text_records = match get_record(&env, &name) {
             Ok(existing) => {
-                if existing.owner != canonical_owner {
+                if registry_backed_owner.is_none() && existing.owner != canonical_owner {
                     return Err(ResolverError::Unauthorized);
                 }
                 existing.text_records
